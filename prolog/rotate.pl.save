@@ -1,0 +1,5 @@
+rotate(X,0,X):-!.
+
+rotate([H|T],N,M) :- N>0 , N1 is N-1 , rotate([Tail|H] , N1 ,M ).
+
+rotate ([H|T],N,M) :- N<0 , N1 is N+1 , rotate( ,N1,M). 

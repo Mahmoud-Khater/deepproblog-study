@@ -1,0 +1,3 @@
+countleaves(nil,0).
+
+count
