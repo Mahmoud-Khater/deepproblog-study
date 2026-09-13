@@ -1,0 +1,10 @@
+# Local smoke test (notebooks/local_smoke_test.ipynb)
+# CPU is enough. No Kaggle or JPEG dataset required.
+numpy
+pandas
+scikit-learn
+pillow
+torch
+torchvision
+deepproblog
+ipykernel

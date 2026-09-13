@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented a research framework for neuro-symbolic breast cancer diagnosis that combines neural visual concept extraction with DeepProbLog-based probabilistic logical reasoning and medical knowledge inspired by BI-RADS. The motivation is that purely end-to-end neural classifiers, while often effective, may not expose an explicit intermediate reasoning process suitable for clinical scrutiny. By estimating clinically meaningful visual concepts and reasoning over their uncertainty within a probabilistic logic program, the proposed approach aims to support more interpretable diagnostic decision structures and a clearer separation between learned perception and explicit domain knowledge.
+
+The neural component is responsible for perception; DeepProbLog provides the mechanism for uncertain symbolic inference; and the knowledge base is intended to encode verified medical criteria rather than ad hoc rules. The planned evaluation will compare the proposed pipeline against conventional neural baselines using standard diagnostic metrics and qualitative analysis of reasoning traces. Because experiments have not yet been completed, this work does not claim improved accuracy, clinical readiness, or guaranteed explainability.
+
+Future work includes validation on additional datasets, refinement of the concept inventory, enrichment of clinically verified knowledge, expert evaluation of reasoning traces, and robustness testing under distribution shift and incomplete concept supervision.

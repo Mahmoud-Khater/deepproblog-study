@@ -1,0 +1,15 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Deep Learning for Breast Cancer Image Classification}
+Deep learning is widely used in medical image analysis~\cite{litjens2017survey}, including mammography and breast ultrasound for detection, classification, and related diagnostic tasks~\cite{balkenende2022application}. Residual networks and similar vision backbones are common transferable extractors~\cite{he2016resnet}. Public datasets such as BUSI~\cite{aldhabyani2020busi} and CBIS-DDSM~\cite{lee2017cbis} support reproducible experimentation. Many systems emphasize end-to-end label prediction and do not expose a structured intermediate concept layer for symbolic diagnostic reasoning.
+
+\subsection{Explainable AI in Medical Imaging}
+Interpretability is important in medical imaging because clinical decisions depend on trust and accountability~\cite{vandervelden2022xai,rudin2019stop}. Explanation strategies include post-hoc methods for black-box models, inherently interpretable models, and concept-based approaches that route predictions through human-understandable variables~\cite{koh2020concept}. Concept bottleneck models are especially relevant because they encourage an explicit concept layer before the final prediction~\cite{koh2020concept}. This study couples concept predictions with probabilistic logical reasoning rather than relying solely on a second neural predictor.
+
+\subsection{Neuro-Symbolic AI and DeepProbLog}
+Neuro-symbolic AI combines neural perception with symbolic reasoning and knowledge representation~\cite{garcez2002neural,garcez2023neurosymbolic}. ProbLog extends logic programming with probabilistic facts~\cite{deraedt2007problog}, and DeepProbLog introduces neural predicates so that neural networks can parameterize probabilities used by a probabilistic logic program~\cite{manhaeve2018deepproblog,manhaeve2021neural}. This supports uncertain perception, logical rules, probabilistic inference, and, in suitable formulations, differentiable learning. DeepProbLog is relevant here not as a substitute for deterministic conditionals, but as a mechanism for reasoning under uncertainty with explicit symbolic structure.
+
+\subsection{Research Gap}
+While neural methods learn discriminative image representations and symbolic systems encode domain knowledge, practical integration of uncertain visual concepts with probabilistic medical reasoning for breast imaging diagnosis remains an open investigation. Few studies appear to have examined DeepProbLog-based reasoning over breast-imaging concepts with BI-RADS-inspired knowledge; this characterization should be strengthened by further literature search before submission.
+% TODO: Expand the literature search and cite closely related neuro-symbolic breast imaging studies if found.

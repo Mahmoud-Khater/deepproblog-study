@@ -1,0 +1,108 @@
+\section{Proposed Neuro-Symbolic Approach}
+\label{sec:methodology}
+
+The proposed framework investigates a pipeline in which a neural model extracts interpretable visual concepts from a breast medical image, those concepts are represented as probabilistic facts, and DeepProbLog performs probabilistic logical inference with explicit medical knowledge:
+
+\begin{center}
+\small
+Medical Image $\rightarrow$ Neural Concept Extractor $\rightarrow$ Probabilistic Concepts \\
+$\rightarrow$ DeepProbLog + Symbolic Knowledge $\rightarrow$ Diagnostic Prediction / Reasoning Trace
+\end{center}
+
+The neural network is therefore not treated solely as a black-box malignant/benign classifier.
+
+\subsection{Overall Architecture}
+\label{sec:architecture}
+
+Figure~\ref{fig:architecture} summarizes the intended system. A mammogram is processed by a neural vision model that estimates clinically meaningful visual concepts such as shape, margin, and calcification. These uncertain concept outputs are represented as probabilistic facts and passed to DeepProbLog, which applies medical rules to compute a malignant probability and can support an explicit reasoning trace.
+
+As a conceptual illustration only:
+\begin{align*}
+\mathrm{shape}(x,\mathrm{irregular}) &: 0.88, \qquad
+\mathrm{margin}(x,\mathrm{spiculated}) &: 0.81.
+\end{align*}
+These values are not experimental results, and the notation is conceptual rather than final DeepProbLog syntax.
+% TODO: Document exact DeepProbLog syntax after implementation.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  node distance=0.45cm and 0.28cm,
+  box/.style={
+    draw,
+    rounded corners=1.5pt,
+    align=center,
+    inner sep=3.5pt,
+    minimum height=0.55cm,
+    thick
+  },
+  concept/.style={
+    box,
+    minimum width=1.55cm
+  },
+  main/.style={
+    box,
+    minimum width=3.4cm
+  },
+  arr/.style={
+    -{Latex[length=2.2mm]},
+    thick
+  }
+]
+  \node[main] (mammo) {Mammogram};
+  \node[main, below=of mammo] (nn) {Neural Vision Model};
+  \node[concept, below left=0.55cm and 0.05cm of nn] (shape) {Shape};
+  \node[concept, below=0.55cm of nn] (margin) {Margin};
+  \node[concept, below right=0.55cm and 0.05cm of nn] (calc) {Calcification};
+  \node[main, below=1.35cm of nn] (facts) {Probabilistic Facts};
+  \node[main, below=of facts] (dpl) {DeepProbLog};
+  \node[main, below=of dpl] (rules) {Medical Rules};
+  \node[main, below=of rules] (out) {Malignant Probability};
+
+  \draw[arr] (mammo) -- (nn);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (shape.north);
+  \draw[arr] (nn.south) -- (margin.north);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (calc.north);
+  \draw[arr] (shape.south) |- (facts.north);
+  \draw[arr] (margin.south) -- (facts.north);
+  \draw[arr] (calc.south) |- (facts.north);
+  \draw[arr] (facts) -- (dpl);
+  \draw[arr] (dpl) -- (rules);
+  \draw[arr] (rules) -- (out);
+\end{tikzpicture}
+\caption{Overview of the proposed neuro-symbolic breast cancer diagnosis framework. A neural vision model extracts concept-level evidence (e.g., shape, margin, and calcification), which is represented as probabilistic facts and reasoned over by DeepProbLog with medical rules to produce a malignant probability.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Neural Visual Concept Extraction}
+\label{sec:concepts}
+
+The neural model transforms raw image information into clinically meaningful visual concepts, each with an associated probability. Conceptually,
+\begin{center}
+\small
+Image $\rightarrow$ CNN / Vision Model $\rightarrow$ $\{\mathrm{mass},\;\mathrm{margin},\;\mathrm{shape},\;\mathrm{calcification},\;\ldots\}$.
+\end{center}
+This differs from a direct mapping $\mathrm{Image}\rightarrow\mathrm{Malignant}$. Candidate concept families include mass presence, shape, margin, calcification-related descriptors, and other BI-RADS-aligned characteristics where appropriate~\cite{acr2013birads,lee2017cbis}. The study distinguishes among: (i)~concepts directly annotated in the dataset; (ii)~concepts derivable from metadata; and (iii)~concepts requiring additional annotation or modeling assumptions.
+% TODO: Finalize concept inventory after dataset selection and annotation audit.
+% TODO: Do not assume BUSI provides BI-RADS descriptor labels unless verified.
+% TODO: For CBIS-DDSM, verify which BI-RADS descriptors are usable for supervision.
+
+\subsection{Probabilistic Logic Representation}
+\label{sec:problog}
+
+Because concept extraction is imperfect, the symbolic component should reason over uncertain evidence rather than treating neural predictions as absolute truths. Neural outputs can be represented as probabilistic facts or neural predicates parameterized by the vision model~\cite{deraedt2007problog,manhaeve2018deepproblog}. DeepProbLog supplies probabilities from neural networks, applies logical rules relating concepts to diagnostic hypotheses, and computes the success probability of a diagnostic query. The motivation is joint handling of perception, uncertainty, probabilistic reasoning, and symbolic knowledge---not replacing ordinary conditionals with equivalent Prolog.
+
+\subsection{Medical Knowledge and Rule Representation}
+\label{sec:knowledge}
+
+The symbolic knowledge base will be constructed from verified domain knowledge and, where applicable, BI-RADS terminology and assessment criteria~\cite{acr2013birads}. Exact rules will be defined only after verifying the relevant clinical documentation. This paper does not invent diagnostic rules or present unverified heuristics as official BI-RADS guidelines.
+% TODO [REQUIRES CLINICAL VERIFICATION]: Define the symbolic rule set from primary BI-RADS documentation and/or clinician-validated knowledge.
+% TODO: Decide whether the target is binary malignancy, BI-RADS assessment categories, or an intermediate risk formulation.
+
+The symbolic layer is intended to provide explicit structure, traceable decision paths, and separation between learned perception and declarative knowledge. Whether this improves diagnostic performance remains an experimental question.
+
+\subsection{Neuro-Symbolic Inference}
+\label{sec:inference}
+
+The neural model learns concept predictors from images; the symbolic model encodes domain knowledge; and DeepProbLog combines probabilistic neural outputs with logical reasoning~\cite{manhaeve2021neural}. Depending on the formulation, gradients may propagate through probabilistic reasoning to optimize the neural component. This possibility will be investigated, but is not assumed to be automatically beneficial. The goal is neural learning combined with symbolic knowledge and probabilistic reasoning, not deterministic Prolog alone. Reasoning traces may support interpretability, but do not by themselves guarantee clinically adequate explanations.

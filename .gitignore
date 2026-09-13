@@ -6,7 +6,13 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 *.egg-info/
+
+# Generated notebook outputs
+data/processed/
+notebooks/processed/
+notebooks/processed_local/
 
 # Backup files
 *_original.txt

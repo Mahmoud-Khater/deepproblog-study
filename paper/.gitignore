@@ -1,0 +1,33 @@
+## LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*-blx.bib
+texput.log
+compile.log
+
+## Local TeX helper tree (optional)
+texmf/
+
+## Generated PDF (uncomment if you prefer not to track compiled output)
+# *.pdf
+
+## Editor / OS
+.DS_Store
+*~
+*.swp
+.idea/
+.vscode/
