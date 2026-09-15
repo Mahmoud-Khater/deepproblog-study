@@ -9,9 +9,9 @@ Unless marked otherwise, the choices below are provisional.
 Two public datasets are currently considered:
 \begin{itemize}
 \item \textbf{BUSI:} Breast ultrasound images labeled as normal, benign, or malignant, with mask annotations~\cite{aldhabyani2020busi}.
-\item \textbf{CBIS-DDSM:} Curated mammography cases with pathology information and, for many abnormalities, BI-RADS-related descriptors such as mass shape/margin and calcification type/distribution~\cite{lee2017cbis}.
+\item \textbf{CBIS-DDSM:} Curated mammography cases with pathology information and, for many abnormalities, BI-RADS-related descriptors such as mass shape/margin and calcification type/distribution~\cite{lee2017cbis}. The current implementation uses CBIS-DDSM.
 \end{itemize}
-No final dataset has been selected. Selection will depend on label availability, image quality, class distribution, concept-relevant annotations, and compatibility with the proposed representation.
+Mass and calcification tables are merged. After that merge, some patients appear in both official train and test splits; those patients are assigned entirely to train so that evaluation remains patient-disjoint. As stated in Section~\ref{sec:concepts}, pathology is reduced to a binary label by treating benign and benign-without-callback as a single negative class. This is a simplifying assumption. Selection of any additional dataset will depend on label availability, image quality, class distribution, concept-relevant annotations, and compatibility with the proposed representation.
 % TODO: Select the primary dataset; report splits, class counts, preprocessing, and exclusion criteria.
 
 \begin{table}[!t]
@@ -32,14 +32,13 @@ CBIS-DDSM~\cite{lee2017cbis} & Mammography & \todo{N} & \todo{verify} \\
 \subsection{Neural Model}
 \label{sec:neural}
 
-Candidate backbones include a standard CNN baseline and residual networks such as ResNet~\cite{he2016resnet}; alternatives may be considered. The architecture remains configurable pending dataset and annotation constraints.
-% TODO: Finalize backbone, resolution, augmentation, optimizer, and training schedule.
+Candidate backbones include a standard CNN baseline and residual networks such as ResNet~\cite{he2016resnet}; alternatives may be considered. Geometric augmentation (horizontal flip, small rotation, and mild affine perturbation) is applied to training images only; validation and test images are left unchanged. Learning rate and batch size are selected by a small grid search on validation macro F1, after which the selected pair is used for the full training run.
 Two neural roles are planned: an end-to-end diagnostic classifier (baseline) and a concept extractor for the neuro-symbolic pipeline.
 
 \subsection{DeepProbLog Configuration}
 \label{sec:dplconfig}
 
-The planned configuration includes neural predicates for visual concepts, probabilistic facts from concept outputs, symbolic rules encoding verified medical knowledge, and a diagnostic query (e.g., malignancy probability or another clinically justified target).
+The planned configuration includes neural predicates for lesion kind, shape, margin, and calcification type; probabilistic facts from those network outputs; symbolic rules that gate mass evidence and calcification evidence by lesion kind; and a diagnostic query for malignancy probability. These rules are a computational working program and are not presented as official BI-RADS criteria.
 % TODO: Specify the final program, predicate signatures, query, learning schedule, and inference settings.
 
 \subsection{Baselines}
@@ -54,5 +53,5 @@ The planned configuration includes neural predicates for visual concepts, probab
 \subsection{Evaluation Metrics}
 \label{sec:metrics}
 
-The evaluation will report accuracy, precision, recall/sensitivity, specificity, F1-score, and ROC-AUC where applicable, with emphasis on sensitivity and specificity. Interpretability will be assessed qualitatively via reasoning traces on selected true/false positive and negative cases; expert review may be added if resources permit.
+The evaluation will report accuracy, precision, recall/sensitivity, specificity, F1-score for both classes (and their macro average), and ROC-AUC where applicable, with emphasis on sensitivity and specificity. Reporting only malignant F1 would hide a model that predicts a single class. Interpretability will be assessed qualitatively via reasoning traces on selected true/false positive and negative cases; expert review may be added if resources permit.
 % TODO: Define the interpretability annotation protocol.

@@ -83,7 +83,9 @@ The neural model transforms raw image information into clinically meaningful vis
 \small
 Image $\rightarrow$ CNN / Vision Model $\rightarrow$ $\{\mathrm{mass},\;\mathrm{margin},\;\mathrm{shape},\;\mathrm{calcification},\;\ldots\}$.
 \end{center}
-This differs from a direct mapping $\mathrm{Image}\rightarrow\mathrm{Malignant}$. Candidate concept families include mass presence, shape, margin, calcification-related descriptors, and other BI-RADS-aligned characteristics where appropriate~\cite{acr2013birads,lee2017cbis}. The study distinguishes among: (i)~concepts directly annotated in the dataset; (ii)~concepts derivable from metadata; and (iii)~concepts requiring additional annotation or modeling assumptions.
+This differs from a direct mapping $\mathrm{Image}\rightarrow\mathrm{Malignant}$. The working concept inventory is lesion kind (mass vs.\ calcification), mass shape, mass margin, and calcification type. Other BI-RADS-aligned descriptors may be added where annotations permit~\cite{acr2013birads,lee2017cbis}. The study distinguishes among: (i)~concepts directly annotated in the dataset; (ii)~concepts derivable from metadata; and (iii)~concepts requiring additional annotation or modeling assumptions.
+
+The diagnostic target is binary malignancy. In CBIS-DDSM the original pathology field typically has three values: malignant, benign, and benign-without-callback (benign with no additional follow-up indicated). Any label other than malignant is mapped to the negative class. This merges the two non-malignant categories and is a simplifying assumption, not a claim that those categories are clinically identical.
 % TODO: Finalize concept inventory after dataset selection and annotation audit.
 % TODO: Do not assume BUSI provides BI-RADS descriptor labels unless verified.
 % TODO: For CBIS-DDSM, verify which BI-RADS descriptors are usable for supervision.
