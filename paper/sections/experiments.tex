@@ -1,30 +1,23 @@
 \section{Experimental Setup}
 \label{sec:experiments}
 
-Unless marked otherwise, the choices below are provisional.
-
 \subsection{Dataset}
 \label{sec:dataset}
 
-Two public datasets are currently considered:
-\begin{itemize}
-\item \textbf{BUSI:} Breast ultrasound images labeled as normal, benign, or malignant, with mask annotations~\cite{aldhabyani2020busi}.
-\item \textbf{CBIS-DDSM:} Curated mammography cases with pathology information and, for many abnormalities, BI-RADS-related descriptors such as mass shape/margin and calcification type/distribution~\cite{lee2017cbis}. The current implementation uses CBIS-DDSM.
-\end{itemize}
-Mass and calcification tables are merged. After that merge, some patients appear in both official train and test splits; those patients are assigned entirely to train so that evaluation remains patient-disjoint. As stated in Section~\ref{sec:concepts}, pathology is reduced to a binary label by treating benign and benign-without-callback as a single negative class. This is a simplifying assumption. Selection of any additional dataset will depend on label availability, image quality, class distribution, concept-relevant annotations, and compatibility with the proposed representation.
-% TODO: Select the primary dataset; report splits, class counts, preprocessing, and exclusion criteria.
+The working dataset is CBIS-DDSM~\cite{lee2017cbis}. BUSI~\cite{aldhabyani2020busi} remains a candidate for later comparison. Mass and calcification tables are merged. After that merge, some patients appear in both official train and test splits; those patients are assigned entirely to train so that evaluation remains patient-disjoint. As stated in Section~\ref{sec:concepts}, pathology is reduced to a binary label by treating benign and benign-without-callback as a single negative class. This is a simplifying assumption. Table~\ref{tab:dataset} reports the resulting split sizes.
 
 \begin{table}[!t]
-\caption{Dataset characteristics (to be completed after final selection).}
+\caption{CBIS-DDSM split used in this study (patient-disjoint after leakage fix).}
 \label{tab:dataset}
 \centering
 \small
 \begin{tabular}{@{}lccc@{}}
 \toprule
-Dataset & Modality & Samples & Concept labels \\
+Split & Rows & Patients & Malignant rate \\
 \midrule
-BUSI~\cite{aldhabyani2020busi} & Ultrasound & \todo{N} & \todo{verify} \\
-CBIS-DDSM~\cite{lee2017cbis} & Mammography & \todo{N} & \todo{verify} \\
+Train & 2462 & 1060 & 0.414 \\
+Validation & 462 & 188 & 0.392 \\
+Test & 644 & 318 & 0.399 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -32,26 +25,25 @@ CBIS-DDSM~\cite{lee2017cbis} & Mammography & \todo{N} & \todo{verify} \\
 \subsection{Neural Model}
 \label{sec:neural}
 
-Candidate backbones include a standard CNN baseline and residual networks such as ResNet~\cite{he2016resnet}; alternatives may be considered. Geometric augmentation (horizontal flip, small rotation, and mild affine perturbation) is applied to training images only; validation and test images are left unchanged. Learning rate and batch size are selected by a small grid search on validation macro F1, after which the selected pair is used for the full training run.
-Two neural roles are planned: an end-to-end diagnostic classifier (baseline) and a concept extractor for the neuro-symbolic pipeline.
+Four small convolutional concept networks predict lesion kind (2 classes), shape (3), margin (4), and calcification type (3). CBIS cropped ROI images are already lesion-centered patches of the full mammogram; each ROI is turned into one fixed $224\times 224$ tensor by random resized crop on train and center crop on validation/test (rather than stretching the whole ROI, which can smear fine margin detail). Three stride-2 convolutions then an adaptive $4\times 4$ pool feed a linear classifier. Geometric augmentation (horizontal flip, small rotation, and mild affine perturbation) is applied to training images only. Because malignant cases are the minority ($\approx 41\%$ of train), augmentation is class-balanced: both classes are expanded to $4329$ training images ($8658$ total) so that malignant evidence is not under-represented. Learning rate $3\times 10^{-4}$ and batch size $2$ were selected by a small grid search on validation macro F1. Models are trained for 15 epochs with the ExactEngine of DeepProbLog.
+
+Two neural roles are planned for the full study: an end-to-end diagnostic classifier (baseline) and the concept extractors used here. Only the DeepProbLog concept pipeline is reported in Section~\ref{sec:results}; the pure neural baseline remains future work.
 
 \subsection{DeepProbLog Configuration}
 \label{sec:dplconfig}
 
-The planned configuration includes neural predicates for lesion kind, shape, margin, and calcification type; probabilistic facts from those network outputs; symbolic rules that gate mass evidence and calcification evidence by lesion kind; and a diagnostic query for malignancy probability. These rules are a computational working program and are not presented as official BI-RADS criteria.
-% TODO: Specify the final program, predicate signatures, query, learning schedule, and inference settings.
+Neural predicates supply lesion\_kind, shape, margin, and calc. Symbolic rules gate mass evidence and calcification evidence by lesion kind, as in Section~\ref{sec:knowledge}. The diagnostic query is malignant(X). These rules are a computational working program and are not presented as official BI-RADS criteria. Training jointly updates the concept networks through the probabilistic program.
 
 \subsection{Baselines}
 \label{sec:baselines}
 
 \begin{itemize}
-\item \textbf{Baseline 1:} Pure neural image classifier.
-\item \textbf{Baseline 2:} Neural concept-level model without DeepProbLog, if annotations permit (e.g., concept-bottleneck style)~\cite{koh2020concept}.
-\item \textbf{Proposed:} Neural concepts + DeepProbLog + symbolic medical knowledge.
+\item \textbf{Baseline 1:} Pure neural image classifier (planned; not reported in this draft).
+\item \textbf{Baseline 2:} Neural concept-level model without DeepProbLog, if annotations permit~\cite{koh2020concept} (planned).
+\item \textbf{Proposed:} Neural concepts + DeepProbLog + symbolic medical knowledge (reported).
 \end{itemize}
 
 \subsection{Evaluation Metrics}
 \label{sec:metrics}
 
-The evaluation will report accuracy, precision, recall/sensitivity, specificity, F1-score for both classes (and their macro average), and ROC-AUC where applicable, with emphasis on sensitivity and specificity. Reporting only malignant F1 would hide a model that predicts a single class. Interpretability will be assessed qualitatively via reasoning traces on selected true/false positive and negative cases; expert review may be added if resources permit.
-% TODO: Define the interpretability annotation protocol.
+Reported metrics are accuracy, precision, sensitivity, specificity, F1 for both classes and their macro average, and ROC-AUC. The decision threshold on $P(\mathrm{malignant})$ is chosen on validation only. The default operating point targets validation sensitivity $\geq 0.80$ (selected threshold $0.32$); results at the conventional cut-off $0.5$ are also reported. Interpretability is assessed qualitatively via reasoning traces on selected true/false positive and negative cases: each trace lists concept probabilities, rule-body strengths, the strongest rule, and the final decision.
