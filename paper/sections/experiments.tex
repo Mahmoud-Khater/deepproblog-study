@@ -25,25 +25,25 @@ Test & 644 & 318 & 0.399 \\
 \subsection{Neural Model}
 \label{sec:neural}
 
-Four small convolutional concept networks predict lesion kind (2 classes), shape (3), margin (4), and calcification type (3). CBIS cropped ROI images are already lesion-centered patches of the full mammogram; each ROI is turned into one fixed $224\times 224$ tensor by random resized crop on train and center crop on validation/test (rather than stretching the whole ROI, which can smear fine margin detail). Three stride-2 convolutions then an adaptive $4\times 4$ pool feed a linear classifier. Geometric augmentation (horizontal flip, small rotation, and mild affine perturbation) is applied to training images only. Because malignant cases are the minority ($\approx 41\%$ of train), augmentation is class-balanced: both classes are expanded to $4329$ training images ($8658$ total) so that malignant evidence is not under-represented. Learning rate $3\times 10^{-4}$ and batch size $2$ were selected by a small grid search on validation macro F1. Models are trained for 15 epochs with the ExactEngine of DeepProbLog.
+Concept perception uses an ImageNet-pretrained ResNet18~\cite{he2016resnet} shared trunk with four linear heads (lesion kind 2 classes, shape 3, margin 4, calcification type 3). CBIS cropped ROI images are already lesion-centered patches of the full mammogram; each ROI is turned into one fixed $224\times 224$ tensor by random resized crop on train and center crop on validation/test. Grayscale inputs are repeated to three channels and ImageNet-normalized. Geometric augmentation (horizontal flip, small rotation, and mild affine perturbation) is applied to training images only. Because malignant cases are the minority ($\approx 41\%$ of train), augmentation is class-balanced: both classes are expanded to $4329$ training images ($8658$ total). Heads are trained for two epochs with the trunk frozen, then the trunk is fine-tuned at $0.1\times$ the head learning rate. Learning rate $3\times 10^{-4}$ and batch size $2$ are used with DeepProbLog ExactEngine for 15 epochs.
 
-Two neural roles are planned for the full study: an end-to-end diagnostic classifier (baseline) and the concept extractors used here. Only the DeepProbLog concept pipeline is reported in Section~\ref{sec:results}; the pure neural baseline remains future work.
+A matched end-to-end ResNet18 malignant/benign classifier is trained on the same tensors and splits (no DeepProbLog) as Baseline~1.
 
 \subsection{DeepProbLog Configuration}
 \label{sec:dplconfig}
 
-Neural predicates supply lesion\_kind, shape, margin, and calc. Symbolic rules gate mass evidence and calcification evidence by lesion kind, as in Section~\ref{sec:knowledge}. The diagnostic query is malignant(X). These rules are a computational working program and are not presented as official BI-RADS criteria. Training jointly updates the concept networks through the probabilistic program.
+Neural predicates supply lesion\_kind, shape, margin, and calc. Symbolic rules gate mass evidence and calcification evidence by lesion kind, as in Section~\ref{sec:knowledge}. The diagnostic query is malignant(X). These rules are a computational working program and are not presented as official BI-RADS criteria. Training jointly updates the concept heads (and, after warmup, the shared trunk) through the probabilistic program.
 
 \subsection{Baselines}
 \label{sec:baselines}
 
 \begin{itemize}
-\item \textbf{Baseline 1:} Pure neural image classifier (planned; not reported in this draft).
-\item \textbf{Baseline 2:} Neural concept-level model without DeepProbLog, if annotations permit~\cite{koh2020concept} (planned).
-\item \textbf{Proposed:} Neural concepts + DeepProbLog + symbolic medical knowledge (reported).
+\item \textbf{Baseline 1:} Pure ResNet18 image classifier (same preprocess and splits; no DeepProbLog).
+\item \textbf{Baseline 2:} Neural concept-level model without DeepProbLog, if annotations permit~\cite{koh2020concept} (future).
+\item \textbf{Proposed:} Shared ResNet18 concepts + DeepProbLog + symbolic medical knowledge.
 \end{itemize}
 
 \subsection{Evaluation Metrics}
 \label{sec:metrics}
 
-Reported metrics are accuracy, precision, sensitivity, specificity, F1 for both classes and their macro average, and ROC-AUC. The decision threshold on $P(\mathrm{malignant})$ is chosen on validation only. The default operating point targets validation sensitivity $\geq 0.80$ (selected threshold $0.32$); results at the conventional cut-off $0.5$ are also reported. Interpretability is assessed qualitatively via reasoning traces on selected true/false positive and negative cases: each trace lists concept probabilities, rule-body strengths, the strongest rule, and the final decision.
+Reported metrics are accuracy, precision, sensitivity, specificity, F1 for both classes and their macro average, and ROC-AUC. The decision threshold on $P(\mathrm{malignant})$ is chosen on validation only. The default operating point targets validation sensitivity $\geq 0.80$; results at the conventional cut-off $0.5$ are also reported. Interpretability is assessed qualitatively via reasoning traces on selected true/false positive and negative cases: each trace lists concept probabilities, rule-body strengths, the strongest rule, and the final decision.
