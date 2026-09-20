@@ -1,15 +1,17 @@
 \section{Results and Discussion}
 \label{sec:results}
 
-Results are reported on the patient-disjoint CBIS-DDSM test split ($n=644$). Three DeepProbLog perception setups were compared under the same splits and rules: a from-scratch concept CNN at $128\times 128$, the same tiny CNN at $224\times 224$ with random ROI crops, and an ImageNet-pretrained ResNet18 shared trunk with four concept heads. A matched end-to-end ResNet18 classifier (no DeepProbLog) is the accuracy reference. The primary claim remains decision transparency: DeepProbLog decomposes every prediction into concept probabilities and rule firings.
+Results are reported on the patient-disjoint CBIS-DDSM test split ($n=644$). DeepProbLog perception progressed from a from-scratch concept CNN, through ImageNet ResNet18 concept heads, to the same ResNet18 with supervised concept warm-up before DeepProbLog fine-tuning. A matched end-to-end ResNet18 classifier (no DeepProbLog) is the accuracy reference. The primary claim remains decision transparency: DeepProbLog decomposes every prediction into concept probabilities and rule firings.
 
 \subsection{Quantitative Results}
 \label{sec:quant}
 
-Table~\ref{tab:comparison} summarizes the runs. Raising resolution and switching to random patches did \emph{not} lift ranking (test ROC-AUC $0.641\rightarrow 0.638$). Replacing the tiny CNN with ResNet18 did: DeepProbLog test AUC rose to $0.700$. At the default cut-off $0.5$ (which already meets validation sensitivity $\geq 0.80$), test sensitivity is $0.805$ with specificity $0.465$. A second, validation macro-F1 operating point at threshold $0.66$ trades recall for specificity ($0.549$ / $0.721$). The pure ResNet18 baseline reaches test AUC $0.746$ and accuracy $0.683$ at $0.5$, but sensitivity only $0.510$; the same validation high-sensitivity protocol is applied to the baseline so the paper does not compare DeepProbLog-at-high-recall only against baseline-at-$0.5$. DeepProbLog trails the baseline on AUC while providing an inspectable concept$\rightarrow$rule trace and a high-recall default cut-off.
+Table~\ref{tab:comparison} summarizes the runs. Raising resolution and random ROI crops alone did not lift ranking (test ROC-AUC stayed near $0.64$). ImageNet ResNet18 raised DeepProbLog AUC to $0.700$. Class-weighted concept warm-up before DeepProbLog fine-tuning raised it further to $0.752$, matching or slightly exceeding the pure ResNet18 baseline AUC ($0.746$).
+
+At the validation-chosen high-sensitivity threshold ($0.55$), DeepProbLog reaches test sensitivity $0.798$ and specificity $0.558$. A validation macro-F1 cut-off at $0.60$ is more balanced ($0.716$ / $0.633$). The baseline at $0.5$ has higher specificity ($0.755$) but only sensitivity $0.591$; under the same sensitivity-target protocol it never reaches $0.80$ (best about $0.61$ at threshold $0.44$). Thus DeepProbLog is competitive on ranking and clearly stronger when high recall is required, while remaining inspectable.
 
 \begin{table}[!t]
-\caption{Test-set comparison ($n=644$). Starred thresholds were chosen on validation for sensitivity $\geq 0.80$; dagger marks the validation macro-F1 cut-off. AUC is threshold-free.}
+\caption{Test-set comparison ($n=644$). Starred thresholds were chosen on validation for sensitivity $\geq 0.80$; dagger marks the validation macro-F1 cut-off. The baseline never reached sensitivity $0.80$ on validation, so its high-sensitivity row uses the fallback Youden threshold. AUC is threshold-free.}
 \label{tab:comparison}
 \centering
 \small
@@ -18,17 +20,17 @@ Table~\ref{tab:comparison} summarizes the runs. Raising resolution and switching
 Model & Setup & Thr. & Acc. & Sens. & Spec. & AUC \\
 \midrule
 DPL & tiny CNN, $128$ & $0.50$ & $0.613$ & $0.525$ & $0.672$ & $0.641$ \\
-DPL & tiny CNN, $128$ & $0.32^*$ & $0.534$ & $0.848$ & $0.326$ & $0.641$ \\
 DPL & tiny CNN, $224$ patch & $0.50$ & $0.596$ & $0.521$ & $0.646$ & $0.638$ \\
-DPL & tiny CNN, $224$ patch & $0.38^*$ & $0.553$ & $0.813$ & $0.380$ & $0.638$ \\
-DPL & ResNet18 concepts & $0.50^*$ & $0.601$ & $0.805$ & $0.465$ & $0.700$ \\
-DPL & ResNet18 concepts & $0.66^\dagger$ & $0.652$ & $0.549$ & $0.721$ & $0.700$ \\
-CNN & ResNet18 baseline & $0.50$ & $0.683$ & $0.510$ & $0.798$ & $0.746$ \\
+DPL & ResNet18 & $0.50^*$ & $0.601$ & $0.805$ & $0.465$ & $0.700$ \\
+DPL & ResNet18 + warm-up & $0.55^*$ & $0.654$ & $0.798$ & $0.558$ & $0.752$ \\
+DPL & ResNet18 + warm-up & $0.60^\dagger$ & $0.666$ & $0.716$ & $0.633$ & $0.752$ \\
+CNN & ResNet18 baseline & $0.50$ & $0.689$ & $0.591$ & $0.755$ & $0.746$ \\
+CNN & ResNet18 baseline & $0.44$ & $0.693$ & $0.611$ & $0.747$ & $0.746$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Concept agreement on validation confirms that transfer learning fixed perception. Agreement at probability $0.5$ rose from (kind / shape / margin / calc) $= (0.78,/\,0.62,/\,0.51,/\,0.63)$ with the tiny CNN to $(0.92,/\,0.74,/\,0.70,/\,0.86)$ with ResNet18. Margin moved from near chance to usable evidence for the spiculated-margin rule.
+Concept agreement on validation (probability of the gold label $\geq 0.5$) for the warm-up model is kind $0.905$, shape $0.723$, margin $0.701$, and calcification $0.820$. Margin remains the weakest concept, consistent with remaining false negatives and false positives.
 
 \subsection{How DeepProbLog Exposes the Decision}
 \label{sec:traces}
@@ -36,15 +38,15 @@ Concept agreement on validation confirms that transfer learning fixed perception
 A conventional CNN returns only $P(\mathrm{malignant})$. DeepProbLog returns that probability as the success probability of the query malignant(X), computed from the concept networks through the three rules. For each case the pipeline reports concept probabilities, the approximate strength of each rule body, the strongest rule, and the binary decision.
 
 \paragraph{Correct malignant case.}
-For validation case P\_00045 (malignant mass), ResNet concepts gave $P(\mathrm{kind}=\mathrm{mass})=1.000$, $P(\mathrm{shape}=\mathrm{irregular})=0.864$, and $P(\mathrm{margin}=\mathrm{spiculated})=0.955$. The strongest rule was mass with spiculated margin; $P(\mathrm{malignant})=0.994$.
+For validation case P\_00045 (malignant mass), the warm-up model gave $P(\mathrm{kind}=\mathrm{mass})=1.000$ and $P(\mathrm{shape}=\mathrm{irregular})=0.983$, so the mass--irregular rule dominated and $P(\mathrm{malignant})=0.983$.
 
-\paragraph{False positive from earlier runs, now fixed.}
-Validation case P\_00061 (benign mass) previously fired the calcification rule because lesion kind was wrong. With ResNet18, $P(\mathrm{kind}=\mathrm{mass})=0.978$ and $P(\mathrm{malignant})=0.027$: correct benign. The symbolic rules did not change; better perception stopped the wrong rule from firing.
+\paragraph{False positive from wrong lesion kind.}
+Validation case P\_00061 (benign mass) remains instructive: the nets assigned $P(\mathrm{kind}=\mathrm{calcification})=0.990$ and $P(\mathrm{calc}=\mathrm{suspicious})=0.919$, so the calcification rule fired ($P(\mathrm{malignant})=0.910$) despite gold descriptors indicating a mass. The symbolic layer applied the correct rule to incorrect concepts---an error a black-box score would not localize.
 
 \paragraph{Remaining errors are still perception.}
-Test false negative P\_00116 is a malignant mass annotated irregular and spiculated, yet the nets under-called both descriptors ($P=0.100$ and $0.000$), so all rule bodies stayed low. Test false positive P\_00032 is a benign mass where the model over-called irregular shape ($0.762$) and the mass--irregular rule fired correctly on incorrect concepts.
+Test false negative P\_00017 is malignant with gold shape regular and margin other, so no malignancy rule should fire strongly from gold labels; the model partially called irregular shape ($0.363$) but stayed below the $0.55$ threshold. Test false positive P\_00032 is a benign mass where irregular shape was over-called ($0.719$) and the mass--irregular rule fired. In both cases the decision path is readable as concept error rather than an opaque logit.
 
 \subsection{Discussion}
 \label{sec:discussion}
 
-Three conclusions follow. First, the bottleneck was the feature extractor, not the Prolog program: $224$ patches alone failed, while ImageNet ResNet18 raised AUC and concept agreement together. Second, DeepProbLog's contribution is decision transparency plus dual operating points (high-recall at $0.5$, more balanced at the validation macro-F1 cut-off); the matched ResNet baseline remains stronger on AUC and specificity at $0.5$, and must be threshold-swept under the same sensitivity target for a fair comparison. Third, declarative rules stay editable: gating calcification by lesion kind earlier corrected an always-malignant collapse without relabeling data. Supervised concept warm-up with class-weighted losses is the next training-stage improvement aimed at remaining shape/margin errors.
+Four conclusions follow. First, the bottleneck was perception, not the Prolog program: resolution and patches alone failed, ResNet18 helped, and class-weighted concept warm-up delivered the largest AUC gain ($0.700\rightarrow 0.752$). Second, under a matched high-sensitivity protocol DeepProbLog is preferable to the pure CNN: it reaches sensitivity near $0.80$ with usable specificity, while the baseline cannot. Third, at the default $0.5$ cut-off the baseline still looks stronger on accuracy and specificity, so both operating points should be reported. Fourth, declarative rules remain editable and traces remain the methodological payoff: errors attribute to named concepts (especially kind, shape, and margin) rather than to a single score.
