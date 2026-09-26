@@ -1,0 +1,71 @@
+% JAC-ECC 2026 IEEE Conference Paper Draft (DOUBLE-BLIND SUBMISSION)
+% Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge
+%
+% Compile with: pdflatex main && bibtex main && pdflatex main && pdflatex main
+%
+% CAMERA-READY: After acceptance, restore the real author block below and
+% re-add acknowledgments/funding if desired. Do not include those in review.
+%
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+
+% Optional: uncomment for draft notes visibility
+% \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todo}[1]{\textit{[TODO: #1]}}
+
+% Clear identifying PDF metadata for double-blind review.
+\pdfinfo{
+  /Title (Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge)
+  /Author ()
+  /Subject ()
+  /Keywords ()
+  /Creator (LaTeX with IEEEtran)
+  /Producer ()
+}
+
+\begin{document}
+
+\title{Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge}
+
+% -------------------------------------------------------------------------
+% JAC-ECC 2026 double-blind: no names, affiliations, emails, or acknowledgments.
+% Restore the camera-ready author block after acceptance (kept commented below).
+% -------------------------------------------------------------------------
+% \author{\IEEEauthorblockN{Anonymous Author(s)}
+% \IEEEauthorblockA{Affiliation withheld for double-blind review}}
+
+% CAMERA-READY AUTHOR BLOCK (do not use for review submission):
+% \author{\IEEEauthorblockN{Author Name}
+% \IEEEauthorblockA{Affiliation\\
+% City, Country\\
+% Email: author@institution.edu}}
+
+\maketitle
+
+\begin{abstract}
+Breast cancer diagnosis from medical images is an important application of deep learning, but end-to-end networks often return only a malignancy score without pointing to the visual evidence behind this decision. This paper implements a neuro-symbolic architecture based on DeepProbLog for explainability: a deep network pretrained on ImageNet consisting of a ResNet18 trunk with four concept heads extracts lesion and calcification types as well as lesion shape and size. DeepProbLog combines those uncertain concepts with declarative rules inspired by BI-RADS (Breast Imaging Recording and Data System) so that every prediction decomposes into corresponding concepts and  supporting rule firing probabilities. A matched end-to-end ResNet18 baseline architecture uses the same CBIS-DDSM dataset splits for fair comparison. On test data, DeepProbLog reaches ROC-AUC $0.752$ while the baseline reaches $0.746$. Case-level traces show which concepts and rules cause each decision.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Breast cancer diagnosis, neuro-symbolic AI, DeepProbLog, probabilistic logic programming, medical image analysis, explainable AI, BI-RADS
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

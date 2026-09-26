@@ -1,0 +1,10 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented a neuro-symbolic breast cancer diagnosis pipeline whose purpose is explainable decisions, not opaque end-to-end scoring. An ImageNet-pretrained ResNet18 trunk with four concept heads extracts lesion kind, shape, margin, and calcification type; the heads are warmed up with class-weighted cross-entropy on CSV descriptors and then fine-tuned through DeepProbLog ExactEngine with lesion-kind-gated rules inspired by BI-RADS. A matched end-to-end ResNet18 classifier on the same patient-disjoint CBIS-DDSM splits is the accuracy reference.
+
+On the test set, DeepProbLog reaches ROC-AUC $0.752$, essentially matching the baseline ($0.746$). At a validation-chosen high-sensitivity threshold ($0.55$), sensitivity is $0.798$ and specificity $0.558$; a more balanced macro-F1 cut-off ($0.60$) yields sensitivity $0.716$ and specificity $0.633$. The baseline does not attain sensitivity $0.80$ under the same protocol. The higher sensitivity and lower specificity at the primary operating point follow from deliberately prioritizing recall: fewer missed malignancies, at the cost of more false positives---a tradeoff that DeepProbLog makes while still exposing which concepts and rules drove each call.
+
+Unlike an end-to-end CNN that returns only $P(\mathrm{malignant})$, the proposed system reports concept probabilities, rule-body strengths, and the strongest rule. Remaining errors are attributable to under- or over-called BI-RADS descriptors---especially lesion kind, shape, and margin---rather than to opaque logits. Declarative rules remain editable without relabeling images.
+
+Future work includes stronger margin-focused supervision, expert review of reasoning traces, and evaluation on additional datasets such as BUSI.

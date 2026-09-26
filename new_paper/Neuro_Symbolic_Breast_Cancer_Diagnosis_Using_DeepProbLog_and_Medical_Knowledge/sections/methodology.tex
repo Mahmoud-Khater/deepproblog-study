@@ -1,0 +1,106 @@
+\section{Proposed Neuro-Symbolic Approach}
+\label{sec:methodology}
+
+The proposed framework uses a pipeline in which a neural model extracts visual concepts from a breast medical image, those concepts are represented as probabilistic facts, and DeepProbLog performs probabilistic logical inference with explicit medical knowledge:
+
+\begin{center}
+\small
+Medical Image $\rightarrow$ Neural Concept Extractor $\rightarrow$ Probabilistic Concepts \\
+$\rightarrow$ DeepProbLog + Symbolic Knowledge $\rightarrow$ Diagnostic Prediction / Reasoning Trace
+\end{center}
+
+ The final score is accompanied by the concept probabilities and the rule that most strongly supports the decision, so the path from image evidence to diagnosis remains inspectable.
+
+\subsection{Overall Architecture}
+\label{sec:architecture}
+
+Figure~\ref{fig:architecture} summarizes the system. A mammogram is processed by an ImageNet-pretrained ResNet18 trunk shared by four concept heads that estimate lesion kind, shape, margin, and calcification type. These uncertain outputs are neural predicates in DeepProbLog, which applies medical rules to compute $P(\mathrm{malignant})$ and exposes an explicit reasoning trace.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  node distance=0.45cm and 0.22cm,
+  box/.style={
+    draw,
+    rounded corners=1.5pt,
+    align=center,
+    inner sep=3.5pt,
+    minimum height=0.55cm,
+    thick
+  },
+  concept/.style={
+    box,
+    minimum width=1.35cm
+  },
+  main/.style={
+    box,
+    minimum width=3.4cm
+  },
+  arr/.style={
+    -{Latex[length=2.2mm]},
+    thick
+  }
+]
+  \node[main] (mammo) {Mammogram};
+  \node[main, below=of mammo] (nn) {Shared ResNet18 + Heads};
+  \node[concept, below left=0.55cm and 0.55cm of nn] (kind) {Kind};
+  \node[concept, below left=0.55cm and -0.55cm of nn] (shape) {Shape};
+  \node[concept, below right=0.55cm and -0.55cm of nn] (margin) {Margin};
+  \node[concept, below right=0.55cm and 0.55cm of nn] (calc) {Calcification};
+  \node[main, below=1.35cm of nn] (facts) {Probabilistic Facts};
+  \node[main, below=of facts] (dpl) {DeepProbLog};
+  \node[main, below=of dpl] (rules) {Medical Rules};
+  \node[main, below=of rules] (out) {Malignant Probability + Trace};
+
+  \draw[arr] (mammo) -- (nn);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (kind.north);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (shape.north);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (margin.north);
+  \draw[arr] (nn.south) -- ++(0,-0.12) -| (calc.north);
+  \draw[arr] (kind.south) |- (facts.north);
+  \draw[arr] (shape.south) |- (facts.north);
+  \draw[arr] (margin.south) |- (facts.north);
+  \draw[arr] (calc.south) |- (facts.north);
+  \draw[arr] (facts) -- (dpl);
+  \draw[arr] (dpl) -- (rules);
+  \draw[arr] (rules) -- (out);
+\end{tikzpicture}
+\caption{Overview of the neuro-symbolic breast cancer diagnosis framework. An ImageNet-pretrained ResNet18 trunk feeds four concept heads (lesion kind, shape, margin, calcification); DeepProbLog reasons over those uncertain facts with medical rules to produce a malignant probability and a readable decision trace.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Neural Visual Concept Extraction}
+\label{sec:concepts}
+
+The neural model transforms raw image information into clinically meaningful visual concepts, each with an associated probability:
+\begin{center}
+\small
+Image $\rightarrow$ Shared ResNet18 + concept heads $\rightarrow$ $\{\mathrm{lesion\_kind},\;\mathrm{shape},\;\mathrm{margin},\;\mathrm{calcification}\}$.
+\end{center}
+This differs from a direct mapping $\mathrm{Image}\rightarrow\mathrm{Malignant/ non-Malignant}$ decision. Perception uses a single ImageNet-pretrained ResNet18 trunk~\cite{he2016resnet} with four linear heads (Softmax outputs). Grayscale ROI patches are fed to three channels (RGB) and ImageNet-normalized???. The trunk is frozen for a short head-only warmup, then fine-tuned at a lower learning rate than the heads. The working concept inventory is lesion kind (mass vs.\ calcification), mass shape (regular / irregular / unknown), mass margin (circumscribed / spiculated / other / unknown), and calcification type (absent / typically benign / suspicious), aligned with BI-RADS terminology where annotations permit~\cite{acr2013birads,lee2017cbis}.
+
+The diagnostic target is binary malignancy. In CBIS-DDSM the original pathology field typically has three values: malignant, benign, and benign-without-callback (benign with no additional follow-up indicated). Any label other than malignant is mapped to the negative class. This merges the two non-malignant categories and is a simplifying assumption, not a claim that those categories are clinically identical.
+
+\subsection{Probabilistic Logic Representation}
+\label{sec:problog}
+
+Because concept extraction is imperfect, the symbolic component reasons over uncertain evidence rather than treating neural predictions as absolute truths. Neural outputs are neural predicates parameterized by the vision models~\cite{deraedt2007problog,manhaeve2018deepproblog}. DeepProbLog supplies probabilities from those networks, applies logical rules relating concepts to diagnostic hypotheses, and computes the success probability of the query malignant(X). The motivation is joint handling of perception, uncertainty, probabilistic reasoning, and symbolic knowledge---not replacing ordinary conditionals with equivalent Prolog.
+
+\subsection{Medical Knowledge and Rule Representation}
+\label{sec:knowledge}
+
+The symbolic knowledge base uses verified domain terminology inspired by BI-RADS~\cite{acr2013birads}. The working program gates evidence by lesion kind so that mass descriptors do not fire on calcifications and suspicious calcification does not fire on masses:
+
+\begin{itemize}
+\item malignant if mass and irregular shape;
+\item malignant if mass and spiculated margin;
+\item malignant if calcification and suspicious calcification type.
+\end{itemize}
+
+These rules are a computational working program, not official BI-RADS criteria. Keeping knowledge declarative means a mistaken rule can be rewritten without relabeling images; an early version that treated any calcification as malignant evidence collapsed to always-malignant predictions, and gating by lesion kind restored a usable operating point.
+
+\subsection{Neuro-Symbolic Inference}
+\label{sec:inference}
+
+The concept networks learn from images; the symbolic model encodes domain knowledge; and DeepProbLog combines probabilistic neural outputs with logical reasoning~\cite{manhaeve2021neural}. Gradients propagate through ExactEngine inference to update the concept nets. For each case the pipeline reports $P(\mathrm{malignant})$, the concept probabilities, the approximate strength of each rule body, and the strongest rule. That trace is the interpretability mechanism studied in Section~\ref{sec:results}: it shows \emph{how} the decision was formed, not only whether it was correct. Reasoning traces support inspectability; they do not by themselves guarantee clinically adequate explanations.

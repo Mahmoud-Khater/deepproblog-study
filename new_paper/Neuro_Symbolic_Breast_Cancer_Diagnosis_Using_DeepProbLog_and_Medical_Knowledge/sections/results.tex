@@ -1,0 +1,43 @@
+\section{Results and Discussion}
+\label{sec:results}
+
+Results are reported on the patient-disjoint CBIS-DDSM test split ($n=644$). Table~\ref{tab:comparison} compares DeepProbLog with the pure ResNet18 baseline. Ranking quality is essentially matched: DeepProbLog test ROC-AUC is $0.752$ versus $0.746$ for the baseline. The important difference appears at the operating point.
+
+We deliberately choose the decision threshold on validation to target high sensitivity ($\geq 0.80$), because missing a malignant case is clinically more costly than an extra false alarm. Under that protocol DeepProbLog reaches test sensitivity $0.798$ with specificity $0.558$ (threshold $0.55$). A more balanced validation macro-F1 cut-off ($0.60$) yields sensitivity $0.716$ and specificity $0.633$. The baseline at the conventional $0.5$ cut-off has higher specificity ($0.755$) but only sensitivity $0.591$; even when pushed toward higher recall (fallback threshold $0.44$), it reaches only about $0.61$ sensitivity and never meets the $0.80$ target.
+
+\begin{table}[!t]
+\caption{Test-set comparison ($n=644$). Starred thresholds were chosen on validation for sensitivity $\geq 0.80$; dagger marks the validation macro-F1 cut-off. The baseline never reached sensitivity $0.80$ on validation, so its high-sensitivity row uses the fallback Youden threshold. AUC is threshold-free.}
+\label{tab:comparison}
+\centering
+\small
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+Model & Setup & Thr. & Acc. & Sens. & Spec. & AUC \\
+\midrule
+DPL & ResNet18 + warm-up & $0.55^*$ & $0.654$ & $0.798$ & $0.558$ & $0.752$ \\
+DPL & ResNet18 + warm-up & $0.60^\dagger$ & $0.666$ & $0.716$ & $0.633$ & $0.752$ \\
+CNN & ResNet18 baseline & $0.50$ & $0.689$ & $0.591$ & $0.755$ & $0.746$ \\
+CNN & ResNet18 baseline & $0.44$ & $0.693$ & $0.611$ & $0.747$ & $0.746$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Why sensitivity is higher and specificity is lower.}
+This pattern is expected under a high-recall policy, not a failure of DeepProbLog. Lowering the malignancy threshold catches more true malignancies (higher sensitivity) and inevitably labels more benign cases as malignant (lower specificity). DeepProbLog can operate near sensitivity $0.80$ while remaining inspectable; the pure CNN, with similar AUC, does not reach that recall target on the same validation protocol. At a default $0.5$ cut-off the baseline still looks stronger on accuracy and specificity, which is why both operating points are reported: the clinical priority (find malignancies) and the conventional cut-off tell different stories.
+
+Concept agreement on validation (probability of the gold label $\geq 0.5$) is kind $0.905$, shape $0.723$, margin $0.701$, and calcification $0.820$. Margin remains the weakest concept, consistent with remaining false negatives and false positives.
+
+\subsection{How DeepProbLog Exposes the Decision}
+\label{sec:traces}
+
+A conventional CNN returns only $P(\mathrm{malignant})$. DeepProbLog returns that probability as the success probability of the query malignant(X), computed from the concept networks through the three rules. For each case the pipeline reports concept probabilities, the approximate strength of each rule body, the strongest rule, and the binary decision. That decomposition is the reason DeepProbLog is used here: explainability through an explicit concept--rule path.
+
+\paragraph{Correct malignant case.}
+For validation case P\_00045 (malignant mass), the model gave $P(\mathrm{kind}=\mathrm{mass})=1.000$ and $P(\mathrm{shape}=\mathrm{irregular})=0.983$, so the mass--irregular rule dominated and $P(\mathrm{malignant})=0.983$.
+
+\paragraph{False positive from wrong lesion kind.}
+Validation case P\_00061 (benign mass) is instructive: the nets assigned $P(\mathrm{kind}=\mathrm{calcification})=0.990$ and $P(\mathrm{calc}=\mathrm{suspicious})=0.919$, so the calcification rule fired ($P(\mathrm{malignant})=0.910$) despite gold descriptors indicating a mass. The symbolic layer applied the correct rule to incorrect concepts---an error a black-box score would not localize.
+
+\paragraph{Remaining errors are still perception.}
+Test false negative P\_00017 is malignant with gold shape regular and margin other, so no malignancy rule should fire strongly from gold labels; the model partially called irregular shape ($0.363$) but stayed below the $0.55$ threshold. Test false positive P\_00032 is a benign mass where irregular shape was over-called ($0.719$) and the mass--irregular rule fired. In both cases the decision path is readable as concept error rather than an opaque logit.
+From the above, it can be seen that DeepProbLog provides explainability: predictions decompose into BI-RADS-style concept probabilities and rule firings, so errors can be attributed to named descriptors rather than a single score. Second, performance is competitive with a pure ResNet18 baseline (AUC $0.752$ vs.\ $0.746$), while DeepProbLog uniquely supports a high-sensitivity operating point near $0.80$ recall. Third, the lower specificity at that point is the deliberate cost of prioritizing sensitivity; a more balanced threshold recovers specificity at the expense of some recall. Declarative rules remain editable without relabeling images.
