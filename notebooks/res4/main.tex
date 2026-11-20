@@ -1,0 +1,88 @@
+% JAC-ECC 2026 IEEE Conference Paper Draft (DOUBLE-BLIND SUBMISSION)
+% Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge
+%
+% Compile with: pdflatex main && bibtex main && pdflatex main && pdflatex main
+%
+% CAMERA-READY: After acceptance, restore the real author block below and
+% re-add acknowledgments/funding if desired. Do not include those in review.
+%
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{listings}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{tikz}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=none,
+  aboveskip=4pt,
+  belowskip=4pt,
+  xleftmargin=0pt
+}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+
+% Revision colour: change blue to black for the final submission.
+\colorlet{revcolor}{blue}
+\newcommand{\rev}[1]{\textcolor{revcolor}{#1}}
+\newenvironment{revblock}{\color{revcolor}}{}
+
+% Optional: uncomment for draft notes visibility
+% \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todo}[1]{\textit{[TODO: #1]}}
+
+% Clear identifying PDF metadata for double-blind review.
+\pdfinfo{
+  /Title (Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge)
+  /Author ()
+  /Subject ()
+  /Keywords ()
+  /Creator (LaTeX with IEEEtran)
+  /Producer ()
+}
+
+\begin{document}
+
+\title{Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge}
+
+% -------------------------------------------------------------------------
+% JAC-ECC 2026 double-blind: no names, affiliations, emails, or acknowledgments.
+% Restore the camera-ready author block after acceptance (kept commented below).
+% -------------------------------------------------------------------------
+% \author{\IEEEauthorblockN{Anonymous Author(s)}
+% \IEEEauthorblockA{Affiliation withheld for double-blind review}}
+
+% CAMERA-READY AUTHOR BLOCK (do not use for review submission):
+% \author{\IEEEauthorblockN{Author Name}
+% \IEEEauthorblockA{Affiliation\\
+% City, Country\\
+% Email: author@institution.edu}}
+
+\maketitle
+
+\begin{abstract}
+End-to-end networks for breast cancer diagnosis usually return only a malignancy score. This paper uses DeepProbLog for explainability so that the obtained score is computed from named findings. A residual network with 18 layers (ResNet18), pretrained on ImageNet, shares one trunk among four heads that estimate lesion kind, mass shape, mass margin, and calcification type. Those terms come from the Breast Imaging Reporting and Data System (BI-RADS) lexicon. A short probabilistic program turns the uncertain findings into a malignancy probability and a trace of which rule fired. The images are lesion crops from the Curated Breast Imaging Subset of the Digital Database for Screening Mammography (CBIS-DDSM). On the test images, the area under the receiver operating characteristic curve of the proposed DeepProbLog architecture is $0.752$, against $0.746$ for a baseline ResNet18 that predicts malignancy directly. \rev{This difference is not statistically significant (paired DeLong test, $p=0.79$), so the contribution is the decision trace rather than a gain in accuracy. Applied to the recorded findings, the three rules reach a sensitivity of $0.805$, which shows how much of the error comes from the rules and how much from the heads. Knowing the evidence behind the network decision is valuable for the treating physician and for explainable AI.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Breast cancer diagnosis, neuro-symbolic AI, DeepProbLog, probabilistic logic programming, medical image analysis, explainable AI, BI-RADS
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

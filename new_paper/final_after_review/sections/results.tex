@@ -1,0 +1,82 @@
+\section{Results and Discussion}
+\label{sec:results}
+\rev{The operating point} is affected by a good choice of the cutoff threshold on $P(\mathrm{malignant})$. A case with $P(\mathrm{malignant})$ $\geq$ cutoff is considered malignant otherwise it is considered benign. The threshold is chosen on the validation images only \rev{and then kept for the test. It does not change the model.} Table~\ref{tab:comparison} shows the effect of \rev{that threshold} on the test performance. For breast cancer diagnosis one should target the sensitivity metric since it avoids missing a positive case.
+
+
+
+Table~\ref{tab:comparison} compares the selected model (first row in Table~\ref{tab:comparison}) with the base model on the 644 test abnormalities. The ROC-AUC values are $0.752$ for DeepProbLog and $0.746$ for the baseline. \rev{The paired DeLong test gives $p=0.79$~\cite{delong1988comparing}.} \rev{On validation, $P$(recorded class) is at least 0.5 for} 90.5\% of the images for the lesion kind head, 72.3\% for the shape head, 70.1\% for the margin head, and 82.0\% for the calcification head. Sensitivity and specificity differ because each row uses a different threshold. The lower specificity of the selected model is the cost of the higher sensitivity.
+
+\begin{table}[!t]
+\caption{Test comparison on 644 images.}
+\label{tab:comparison}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Model & Valid Thr. & Acc. & Sens. & Spec. & Macro-F1 & AUC \\
+\midrule
+DeepProbLog & 0.55$^{*}$ & 0.654 & \textbf{0.798} & 0.558 & 0.654 & \textbf{0.752} \\
+DeepProbLog & 0.60$^{\dagger}$ & 0.666 & 0.716 & 0.633 & 0.663 & \textbf{0.752} \\
+ResNet18 & 0.50 & 0.689 & 0.591 & \textbf{0.755} & 0.674 & 0.746 \\
+ResNet18 & 0.44$^{\ddagger}$ & \textbf{0.693} & 0.611 & 0.747 & \textbf{0.679} & 0.746 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.45em}
+\begin{minipage}{\columnwidth}
+\footnotesize
+$^{*}$\rev{Highest validation specificity among thresholds with sensitivity at least 0.80.}\\
+$^{\dagger}$Validation threshold with the highest macro-F1.\\
+$^{\ddagger}$The baseline never reached sensitivity 0.80 on validation within the swept range. This is the threshold that best balances its sensitivity and specificity.\\
+Valid Thr.: validation threshold. Acc.: accuracy. Sens.: sensitivity. Spec.: specificity. AUC: area under the curve, which does not depend on a fixed threshold.
+\end{minipage}
+\end{table}
+
+
+
+\subsection{\rev{Why the Gain Is Small}}
+\label{sec:whysmall}
+
+A gain of $0.006$ in ROC-AUC is not a large improvement\rev{, and it is not significant.} One limitation is behind this result:
+\begin{itemize}
+\item Both systems start from the same ResNet18  architecture pretrained on ImageNet. Next, they are  finetuned on the same $224\times224$ crops.
+
+\end{itemize}
+
+
+\subsection{A Decision Trace}
+\label{sec:traces}
+
+We consider the case of a benign mass (P\_00061) (whose ground truth description is: lesion kind= mass, shape= regular, margin = circumscribed, and calcification= absent) that has been misclassified by the model to highlight the practical utility of the decision trace. A standard black-box network would merely output a highly misleading malignancy score, leaving us with no clue to detect the error. Table~\ref{tab:trace}, gives the logic program findings with their corresponding probabilities. The root cause of this failure is that the neural head ``lesion kind'' misidentified the mass as a calcification. Substituting the trace values into Eq.~(\ref{eq:query}) gives
+\begin{equation*}
+\begin{split}
+P(\mathrm{malignant}) ={}& 0.990 \cdot 0.919 \\
+&+ 0.010 \cdot \Big[1-(1-0.001)\\
+&\qquad\cdot(1-0.000)\Big] \\
+={}& 0.910.
+\end{split}
+\end{equation*}
+The mass term is nearly zero, so the score comes from the calcification branch. This allows us to spot the contradictory evidence, reject the erroneous conclusion, and understand exactly where the model's logic failed. This information is, also, valuable for the trainer/ designer of the architecture to improve the network head causing the error.
+
+\begin{table}[!t]
+\caption{Trace for benign mass P\_00061. \rev{Only the classes used by the rules are shown.}}
+\label{tab:trace}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Predicted Class & Value \\
+\midrule
+$P$(kind $=$ mass) & 0.010 \\
+$P$(kind $=$ calcification) & 0.990 \\
+$P$(shape $=$ irregular) & 0.001 \\
+$P$(margin $=$ spiculated) & 0.000 \\
+$P$(calcification $=$ suspicious) & 0.919 \\
+$P$(calcification $=$ absent or typically benign) & 0.081 \\
+\midrule
+$P$(malignant) & 0.910 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,8 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Breast cancer is among the most commonly diagnosed cancers worldwide and a major cause of cancer-related mortality in women~\cite{sung2021global}. Mammography is a primary screening examination. Deep networks now classify breast images with high accuracy, but the usual output is a single malignancy score~\cite{litjens2017survey,balkenende2022application}. In a high-stakes setting, a score without the finding that produced it is difficult to check~\cite{rudin2019stop,vandervelden2022xai}.
+
+One alternative is to predict clinically named visual concepts and then apply explicit domain knowledge~\cite{koh2020concept}. DeepProbLog supports that split: neural predicates supply probabilities, and a probabilistic logic program combines them~\cite{manhaeve2021neural}. This paper uses that split for mammography. Four heads on one ResNet18 trunk extracts lesion and calcification types, mass shape and mass margin (using terminology from the Breast Imaging Reporting and Data System (BI-RADS) lexicon~\cite{acr2013birads}). A three-rule program turns those probabilities into $P(\mathrm{malignant})$ and names the rule that fired. A baseline ResNet18 that maps the image directly to malignancy/ non-malignancy binary decision is used for comparison.
+
+This paper is organized as follows. Section~\ref{sec:related} reviews related work. Section~\ref{sec:methodology} describes the model and the program. Section~\ref{sec:experiments} describes the data and the training setup. Section~\ref{sec:results} reports the results with confidence intervals and walks through one decision trace. Section~\ref{sec:conclusion} concludes the paper.

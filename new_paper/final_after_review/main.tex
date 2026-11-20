@@ -1,0 +1,80 @@
+% JAC-ECC 2026 IEEE Conference Paper Draft (DOUBLE-BLIND SUBMISSION)
+% Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge
+%
+% Compile with: pdflatex main && bibtex main && pdflatex main && pdflatex main
+%
+% CAMERA-READY: After acceptance, restore the real author block below and
+% re-add acknowledgments/funding if desired. Do not include those in review.
+%
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{listings}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{tikz}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=none,
+  aboveskip=4pt,
+  belowskip=4pt,
+  xleftmargin=0pt
+}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+
+% Revision colour: black for the final submission.
+\colorlet{revcolor}{black}
+\newcommand{\rev}[1]{\textcolor{revcolor}{#1}}
+\newenvironment{revblock}{\color{revcolor}}{}
+
+\pdfinfo{
+  /Title (Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge)
+  /Author (Mahmoud Khater, Ayman Khalafallah, and Amin Shoukry)
+  /Subject ()
+  /Keywords ()
+  /Creator (LaTeX with IEEEtran)
+  /Producer ()
+}
+
+\begin{document}
+
+\title{Neuro-Symbolic Breast Cancer Diagnosis Using DeepProbLog and Medical Knowledge}
+
+\author{\IEEEauthorblockN{Mahmoud Khater, Ayman Khalafallah, and Amin Shoukry}
+\IEEEauthorblockA{Department of Computer and Systems Engineering,\\
+Faculty of Engineering, Alexandria University, Alexandria, Egypt\\
+\{es-mahmoudgamalkhater20, ayman.khalafallah, amin.shoukry\}@alexu.edu.eg}}
+
+\maketitle
+\pagestyle{plain}
+\thispagestyle{plain}
+
+\begin{abstract}
+End-to-end networks for breast cancer diagnosis usually return only a malignancy score. This paper uses DeepProbLog for explainability so that the obtained score is computed from named findings. A residual network with 18 layers (ResNet18), pretrained on ImageNet, shares one trunk among four heads that estimate lesion kind, mass shape, mass margin, and calcification type. Those terms come from the Breast Imaging Reporting and Data System (BI-RADS) lexicon. A short probabilistic program turns the uncertain findings into a malignancy probability and a trace of which rule fired. The images are lesion crops from the Curated Breast Imaging Subset of the Digital Database for Screening Mammography (CBIS-DDSM). On the test images, the area under the receiver operating characteristic curve of the proposed DeepProbLog architecture is $0.752$, against $0.746$ for a baseline ResNet18 that predicts malignancy directly. This difference is not statistically significant (paired DeLong test, $p=0.79$), so our contribution is more about the decision trace rather than the gain in accuracy.  Knowing the evidence behind the network decision is valuable for the treating physician and for explainable AI.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Breast cancer diagnosis, neuro-symbolic AI, DeepProbLog, probabilistic logic programming, medical image analysis, explainable AI, BI-RADS
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/conclusion}
+
+\section*{ACKNOWLEDGMENT}
+During the preparation of this manuscript, the authors utilized OpenAI ChatGPT and Grok to assist with language refinement, manuscript editing, and formatting. All outputs, findings, and interpretations were independently reviewed, validated, and verified by the authors. The authors take full responsibility for the integrity, accuracy, and overall content of this publication.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

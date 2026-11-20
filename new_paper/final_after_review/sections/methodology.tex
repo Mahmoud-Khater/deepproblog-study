@@ -1,0 +1,130 @@
+\section{Proposed Neuro-Symbolic Approach}
+\label{sec:methodology}
+
+A mammogram image crop is read by one network with four heads. DeepProbLog treats each head as a neural predicate and applies the program given below. The output is $P(\mathrm{malignant})$ together with the rule that contributed most to that probability. Figure~\ref{fig:architecture} shows the proposed architecture.
+
+\subsection{Overall Architecture}
+\label{sec:architecture}
+
+The shared trunk feeds four heads. Each head is passed to DeepProbLog as an uncertain fact, and the rules produce the score and the trace.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={
+    draw,
+    rounded corners=1.5pt,
+    align=center,
+    inner sep=2.5pt,
+    minimum height=0.48cm,
+    thick
+  },
+  wide/.style={box, minimum width=7.15cm},
+  arr/.style={
+    -{Latex[length=1.7mm]},
+    thick
+  }
+]
+  \node[box, minimum width=1.25cm] (kind) {Kind};
+  \node[box, minimum width=1.35cm, right=0.16cm of kind] (shape) {Shape};
+  \node[box, minimum width=1.55cm, right=0.16cm of shape] (margin) {Margin};
+  \node[box, minimum width=2.35cm, right=0.16cm of margin] (calc) {Calcification};
+
+  \coordinate (headtop) at ($(kind.north)!0.5!(calc.north)$);
+  \coordinate (headbot) at ($(kind.south)!0.5!(calc.south)$);
+  \node[wide, anchor=south] (nn) at ([yshift=0.32cm]headtop) {Shared ResNet18 + heads};
+  \node[wide, anchor=south] (mammo) at ([yshift=0.24cm]nn.north) {Mammogram crop};
+  \node[wide, anchor=north] (facts) at ([yshift=-0.32cm]headbot) {Probabilistic facts};
+  \node[wide, below=0.22cm of facts] (dpl) {DeepProbLog};
+  \node[wide, below=0.22cm of dpl] (rules) {Medical rules};
+  \node[wide, below=0.22cm of rules] (out) {Probability + trace};
+
+  \draw[arr] (mammo) -- (nn);
+  \draw[arr] (nn.south -| kind.north) -- (kind.north);
+  \draw[arr] (nn.south -| shape.north) -- (shape.north);
+  \draw[arr] (nn.south -| margin.north) -- (margin.north);
+  \draw[arr] (nn.south -| calc.north) -- (calc.north);
+  \draw[arr] (kind.south) -- (kind.south |- facts.north);
+  \draw[arr] (shape.south) -- (shape.south |- facts.north);
+  \draw[arr] (margin.south) -- (margin.south |- facts.north);
+  \draw[arr] (calc.south) -- (calc.south |- facts.north);
+  \draw[arr] (facts) -- (dpl);
+  \draw[arr] (dpl) -- (rules);
+  \draw[arr] (rules) -- (out);
+\end{tikzpicture}
+\caption{The proposed architecture: an image crop is read by a shared trunk with four heads. DeepProbLog applies the rules and returns a malignancy probability and a trace.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{What the Four Heads Predict}
+\label{sec:concepts}
+
+The trunk is an ImageNet-pretrained residual network with 18 layers (ResNet18)~\cite{he2016resnet}. After pooling it yields a 512 features-vector, that is read by each of the four heads. Each head ends with a softmax activation function. The four heads together produce twelve probabilities. Table~\ref{tab:heads} lists the classes.
+
+\begin{table}[!t]
+\caption{Classes predicted by the four heads.}
+\label{tab:heads}
+\centering
+\footnotesize
+\begin{tabular}{@{}l p{3.55cm}@{}}
+\toprule
+Head & Classes \\
+\midrule
+Lesion kind & mass, calcification \\
+Mass shape & regular, irregular, unknown \\
+Mass margin & circumscribed, spiculated, other, unknown \\
+Calcification type & absent, typically benign, suspicious \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The class names follow the BI-RADS lexicon~\cite{acr2013birads,lee2017cbis}. Lesion kind is the abnormality itself: a mass or a calcification. Mass shape has three groups. Round, oval, and lobulated shapes are recorded as regular. Irregular shape and architectural distortion are recorded as irregular. Otherwise, the shape is considered as unknown. Mass margin has four classes. A 'margin' calss includes spiculated and circumscribed. Indistinct (written ILL\_DEFINED in CBIS-DDSM), microlobulated, and obscured margins are grouped as other, and a missing margin is unknown. Calcification has three groups. Pleomorphic, amorphous, and fine-linear or branching morphologies are recorded as suspicious. Every other calcification morphology, including a missing one, is typically benign. If lesion kind is of type mass, calcification type is marked absent.
+
+\subsection{The Implemented DeepProblog Program}
+\label{sec:knowledge}
+\label{sec:problog}
+The DeepProbLog program listed below describes only the first part of the fifth edition of BI-RADS which focuses on what is visible in the mammogram. It identifies irregular shapes, spiculated margins, and suspicious calcification morphology as the primary indicators of malignancy. It is a small working subset of the full BI-RADS lexicon: indistinct and microlobulated margins and calcification distribution are not included in the adopted rules.
+\begin{lstlisting}
+nn(kind_net, [X], Y, [mass, calcification])
+    :: lesion_kind(X, Y).
+nn(shape_net, [X], Y,
+    [regular, irregular, unknown])
+    :: shape(X, Y).
+nn(margin_net, [X], Y, [circumscribed,
+    spiculated, other, unknown])
+    :: margin(X, Y).
+nn(calc_net, [X], Y, [absent,
+    typically_benign, suspicious])
+    :: calc(X, Y).
+
+malignant(X) :- lesion_kind(X, mass),
+    shape(X, irregular).
+malignant(X) :- lesion_kind(X, mass),
+    margin(X, spiculated).
+malignant(X) :- lesion_kind(X, calcification),
+    calc(X, suspicious).
+\end{lstlisting}
+ Each \texttt{nn} line -in the above program- binds one head to a predicate. Consider the first predicate "kind net" which corresponds to the "lesion kind" head, "X" is the input image, 
+"Y" is the output result  and
+"mass, calcification" is the list of allowed values for "Y". The same pattern governs the other three heads. 
+The above program also include three rules that determine the type of the malignancy found in the input image. For example, the first rule says that an image "X" is classified as malignant if the  lesion kind is "mass" and its shape is "irregular". A rule succeeds and contributes a  probability only when both of its conditions hold.
+
+
+\subsection{Inference in DeepProbLog}
+\label{sec:inference}
+
+DeepProbLog program is given a query \texttt{malignant(X)}. It computes its success probability from the four heads~\cite{manhaeve2021neural}. Each head is a neural annotated disjunction, so its classes are mutually exclusive, and the four heads are treated as independent given the image. Accordingly, the diagnosis probability is calculated as given below in Eq. 1:
+\begin{equation}
+\begin{split}
+P(\mathrm{malignant}) ={}&
+P(\mathrm{calcification}) \cdot P(\mathrm{suspicious})\\
+&+ P(\mathrm{mass}) \cdot \Big[
+1-(1-P(\mathrm{irregular}))\\
+&\qquad\cdot(1-P(\mathrm{spiculated}))
+\Big].
+\end{split}
+\label{eq:query}
+\end{equation}
+
+Within the mass branch, rules~1 and~2 combine as a noisy-OR. The same query probability is used in training and inference, and in every reported metric. For the trace only, the rule whose body has the largest probability is reported as the rule that fired. It explains the score and does not change it.

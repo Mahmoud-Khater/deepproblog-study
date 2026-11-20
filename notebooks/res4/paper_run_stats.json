@@ -1,0 +1,80 @@
+{
+  "n_test": 644,
+  "malignant": 257,
+  "benign": 387,
+  "delong": {
+    "auc_deepproblog": 0.7518273861591209,
+    "auc_resnet18": 0.7464583396173299,
+    "difference": 0.005369046541791045,
+    "se": 0.020534524691922663,
+    "z": 0.26146436902447423,
+    "p_value": 0.7937344234476855,
+    "ci95": [
+      -0.03487788229402582,
+      0.04561597537760791
+    ]
+  },
+  "bootstrap_ci95": {
+    "deepproblog": [
+      0.7119182234598767,
+      0.788977756304891
+    ],
+    "resnet18": [
+      0.7071304170004233,
+      0.7838718645708599
+    ]
+  },
+  "ground_truth_program": {
+    "original": {
+      "accuracy": 0.6739130434782609,
+      "sensitivity": 0.8054474708171206,
+      "specificity": 0.58656330749354,
+      "tp": 207,
+      "tn": 227,
+      "fp": 160,
+      "fn": 50,
+      "roc_auc": 0.6960053891553304
+    },
+    "revised": {
+      "accuracy": 0.6475155279503105,
+      "sensitivity": 0.9182879377431906,
+      "specificity": 0.46770025839793283,
+      "tp": 236,
+      "tn": 181,
+      "fp": 206,
+      "fn": 21,
+      "roc_auc": 0.6929940980705618
+    }
+  },
+  "error_attribution": {
+    "threshold": 0.55,
+    "errors": 223,
+    "rule_side": 130,
+    "head_side": 93,
+    "rule_side_fn": 21,
+    "rule_side_fp": 109,
+    "head_side_fn": 31,
+    "head_side_fp": 62
+  },
+  "at_paper_threshold": {
+    "accuracy": 0.6537267080745341,
+    "sensitivity": 0.7976653696498055,
+    "specificity": 0.5581395348837209,
+    "tp": 205,
+    "tn": 216,
+    "fp": 171,
+    "fn": 52
+  },
+  "specificity_at_test_sensitivity_0.80": {
+    "deepproblog": {
+      "threshold": 0.5482609272003174,
+      "sensitivity": 0.8093385214007782,
+      "specificity": 0.5555555555555556
+    },
+    "resnet18": {
+      "threshold": 0.021692322567105293,
+      "sensitivity": 0.8015564202334631,
+      "specificity": 0.5400516795865633
+    }
+  }
+}

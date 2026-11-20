@@ -1,0 +1,11 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Deep Learning for Breast Cancer Image Classification}
+Deep learning is widely used in medical image analysis, including mammography classification and computer-aided diagnosis. Residual networks are common pretrained feature extractors~\cite{he2016resnet}. Public collections include the Curated Breast Imaging Subset of the Digital Database for Screening Mammography (CBIS-DDSM)~\cite{lee2017cbis} and Breast Ultrasound Images (BUSI)~\cite{aldhabyani2020busi}. This study uses CBIS-DDSM mammograms only. Many published systems predict the label from the image directly and do not expose a concept layer that a symbolic program can read.
+
+\subsection{Explainable Models in Medical Imaging}
+Clinical use needs an explanation that can be checked, not only a single score~\cite{vandervelden2022xai,rudin2019stop}. Post-hoc methods explain a trained black box after the decision.  Other models extract the evidences first, then decide the diagnosis from them~\cite{koh2020concept}. This paper keeps the concept layer (evidence), but the step from concepts to malignancy is a probabilistic logic program rather than a second neural network.
+
+\subsection{Neuro-Symbolic Reasoning}
+Neuro-symbolic models combine neural perception with symbolic rules~\cite{garcez2002neural,garcez2023neurosymbolic}. ProbLog attaches probabilities to logical facts~\cite{deraedt2007problog}. DeepProbLog lets a neural network supply those probabilities, then runs the usual probabilistic inference~\cite{manhaeve2018deepproblog,manhaeve2021neural}. The program in this paper describes this inference step: it does not replace the rules with an equivalent set of ordinary conditionals hidden inside another network.

@@ -1,0 +1,79 @@
+\section{Experimental Setup}
+\label{sec:experiments}
+
+\subsection{Dataset and Images}
+\label{sec:dataset}
+
+The images come from CBIS-DDSM~\cite{lee2017cbis}, a curated subset of the Digital Database for Screening Mammography. The images are digitized screen-film mammograms. For each annotated abnormality the release contains three pictures: the full breast image, a crop centered on the lesion, and a binary mask of that lesion. We use only the grayscale crop. The shape, margin, and calcification descriptors refer to the abnormality. Mass crops and calcification crops are pooled into one set of abnormalities.
+
+Table II, shows how the dataset has been split into training (69\%), validation (13\%) and testing (18\%). Care has been taken so that no patient appears in more than one split. After the mass and calcification files are merged, the official CBIS-DDSM split places 31 patients in both training and test. All their rows were moved to training, so the test set keeps 644 of the official 704 images, and the validation set is drawn from the training patients with a grouped split. The numbers are therefore not directly comparable with work that reports results on the official split. The recorded pathology has three values: malignant, benign, and benign without callback. Benign without callback means a benign finding for which no further recall has been indicated. Both non-malignant values are treated as the negative class. They are not clinically the same; the merge only defines the binary task. 
+
+
+
+\begin{table}[!t]
+\caption{Cropped images in each split, before augmentation.}
+\label{tab:dataset}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Split & Images & Patients & Malignant \\
+\midrule
+Train & 2462 (69.0\%) & 1060 (67.7\%) & 1019 (41.4\%) \\
+Validation & 462 (12.9\%) & 188 (12.0\%) & 181 (39.2\%) \\
+Test & 644 (18.0\%) & 318 (20.3\%) & 257 (39.9\%) \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\begin{minipage}{\columnwidth}
+\footnotesize
+Image and patient percentages are shares of 3568 images and 1566 patients. The malignant percentage is the share of the original images in that split, before augmentation.
+\end{minipage}
+\end{table}
+
+\begin{table}[!t]
+\caption{Copies added to the training split so both classes have the same number of images.}
+\label{tab:augmentation}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Class & Copies added & After \\
+\midrule
+Benign & 2886 & 4329 (50\%) \\
+Malignant & 3310 & 4329 (50\%) \\
+\midrule
+Total & 6196 & 8658 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\begin{minipage}{\columnwidth}
+\footnotesize
+The percentage is the share of the 8658 training images after augmentation.
+\end{minipage}
+\end{table}
+
+\subsection{Why the Adopted size of an Input Image is 224×224 Pixels}
+\label{sec:resolution}
+
+The downloaded 3568 crops do not share the same size. Every crop is adjusted to $224\times 224$ pixels, which corresponds to 70\% to 100\% of the original crop. This choice has been made due to our hardware platform limitations. Crops smaller than 224 x 224 pixels are enlarged, which blurs the margin. Crops much larger than 224 x 224  pixels are reduced. Because 41.4\% of training abnormalities are malignant, extra training copies are added until each class has 4329 images. Data augmentation has been done by horizontal flipping, rotation by up to 12 degrees, or mild shifting and rescaling.
+
+
+\subsection{Training}
+\label{sec:neural}
+
+The training has two stages. Both run on two NVIDIA T4 graphics processing units (on Kaggle).
+
+\textit{Stage 1, without DeepProbLog.} The  four heads are trained, in a warm-up phase in supervised mode, for eight epochs to match the recorded findings, at a learning rate of $3\times10^{-4}$. In the first two epochs, the trunk is frozen, so only the heads learn. In the next six epochs, the trunk learns as well, at a learning rate of $3\times10^{-5}$, which is one tenth of the heads learning rate. Only the concept labels are used, with batch size 16. \rev{The loss is cross-entropy. The program is not used.}
+
+\textit{Stage 2, with DeepProbLog.} The same architecture is then trained for 15 more epochs, at a learning rate of $3\times10^{-4}$ and batch size 2 images. The trunk remains trainable at the lower learning rate of $3\times10^{-5}$. Both the malignancy label and the concept labels are used. \rev{The loss is cross-entropy, and the malignancy term passes through the program.}
+
+The baseline is a ResNet18 with a single two-class output, malignant or not. It is trained for 15 epochs on the same images and the same splits, with no logic program.
+
+\subsection{Performance Metrics}
+\label{sec:metrics}
+
+We adopted the accuracy, sensitivity, specificity, and the area under the receiver operating characteristic curve (ROC-AUC), as our performance metrics. Accuracy is the proportion of correct predictions (both positive and negative) out of the total number of predictions. Sensitivity is the share of malignant cases that are caught. Specificity is the share of non-malignant cases that are correctly predicted as negative. \rev{Macro-F1 is the mean of the two class F1 scores.}

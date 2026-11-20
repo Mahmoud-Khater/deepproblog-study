@@ -1,0 +1,93 @@
+\relax 
+\citation{sung2021global}
+\citation{litjens2017survey,balkenende2022application}
+\citation{rudin2019stop,vandervelden2022xai}
+\citation{koh2020concept}
+\citation{manhaeve2018deepproblog,manhaeve2021neural}
+\citation{acr2013birads}
+\citation{he2016resnet}
+\citation{lee2017cbis}
+\citation{aldhabyani2020busi}
+\citation{vandervelden2022xai,rudin2019stop}
+\citation{koh2020concept}
+\citation{garcez2002neural,garcez2023neurosymbolic}
+\citation{deraedt2007problog}
+\citation{manhaeve2018deepproblog,manhaeve2021neural}
+\citation{he2016resnet}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\newlabel{sec:introduction}{{I}{1}{}{section.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{}\protected@file@percent }
+\newlabel{sec:related}{{II}{1}{}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Deep Learning for Breast Cancer Image Classification}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Explainable Models in Medical Imaging}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Neuro-Symbolic Reasoning}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Proposed Neuro-Symbolic Approach}{1}{}\protected@file@percent }
+\newlabel{sec:methodology}{{III}{1}{}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Overall Architecture}{1}{}\protected@file@percent }
+\newlabel{sec:architecture}{{\mbox  {III-A}}{1}{}{subsection.3.1}{}}
+\citation{acr2013birads,lee2017cbis}
+\citation{manhaeve2021neural}
+\citation{lee2017cbis}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The proposed architecture: an image crop is read by a shared trunk with four heads. DeepProbLog applies the rules and returns a malignancy probability and a trace.}}{2}{}\protected@file@percent }
+\newlabel{fig:architecture}{{1}{2}{}{figure.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Classes predicted by the four heads.}}{2}{}\protected@file@percent }
+\newlabel{tab:heads}{{I}{2}{}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}What the Four Heads Predict}{2}{}\protected@file@percent }
+\newlabel{sec:concepts}{{\mbox  {III-B}}{2}{}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}The Implemented DeepProblog Program}{2}{}\protected@file@percent }
+\newlabel{sec:knowledge}{{\mbox  {III-C}}{2}{}{subsection.3.3}{}}
+\newlabel{sec:problog}{{\mbox  {III-C}}{2}{}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Inference in DeepProbLog}{2}{}\protected@file@percent }
+\newlabel{sec:inference}{{\mbox  {III-D}}{2}{}{subsection.3.4}{}}
+\newlabel{eq:query}{{1}{2}{}{equation.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Setup}{2}{}\protected@file@percent }
+\newlabel{sec:experiments}{{IV}{2}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Dataset and Images}{2}{}\protected@file@percent }
+\newlabel{sec:dataset}{{\mbox  {IV-A}}{2}{}{subsection.4.1}{}}
+\citation{delong1988comparing}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Cropped images in each split, before augmentation.}}{3}{}\protected@file@percent }
+\newlabel{tab:dataset}{{II}{3}{}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Copies added to the training split so both classes have the same number of images.}}{3}{}\protected@file@percent }
+\newlabel{tab:augmentation}{{III}{3}{}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}\textcolor {revcolor}{Why the Input Size Is 224 $\times $ 224 Pixels}}{3}{}\protected@file@percent }
+\newlabel{sec:resolution}{{\mbox  {IV-B}}{3}{}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Training}{3}{}\protected@file@percent }
+\newlabel{sec:neural}{{\mbox  {IV-C}}{3}{}{subsection.4.3}{}}
+\newlabel{eq:stage1}{{2}{3}{}{equation.2}{}}
+\newlabel{eq:stage2}{{3}{3}{}{equation.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Performance Metrics}{3}{}\protected@file@percent }
+\newlabel{sec:metrics}{{\mbox  {IV-D}}{3}{}{subsection.4.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Test comparison on 644 images.}}{4}{}\protected@file@percent }
+\newlabel{tab:comparison}{{IV}{4}{}{table.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Results and Discussion}{4}{}\protected@file@percent }
+\newlabel{sec:results}{{V}{4}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}\textcolor {revcolor}{Why the Gain Is Small}}{4}{}\protected@file@percent }
+\newlabel{sec:whysmall}{{\mbox  {V-A}}{4}{}{subsection.5.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces The three rules applied to the recorded concepts of the 644 test images (no network).}}{4}{}\protected@file@percent }
+\newlabel{tab:ceiling}{{V}{4}{}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}A Decision Trace}{4}{}\protected@file@percent }
+\newlabel{sec:traces}{{\mbox  {V-B}}{4}{}{subsection.5.2}{}}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\bibcite{sung2021global}{1}
+\bibcite{litjens2017survey}{2}
+\bibcite{balkenende2022application}{3}
+\bibcite{rudin2019stop}{4}
+\bibcite{vandervelden2022xai}{5}
+\bibcite{koh2020concept}{6}
+\bibcite{manhaeve2018deepproblog}{7}
+\bibcite{manhaeve2021neural}{8}
+\bibcite{acr2013birads}{9}
+\bibcite{he2016resnet}{10}
+\bibcite{lee2017cbis}{11}
+\bibcite{aldhabyani2020busi}{12}
+\bibcite{garcez2002neural}{13}
+\bibcite{garcez2023neurosymbolic}{14}
+\bibcite{deraedt2007problog}{15}
+\bibcite{delong1988comparing}{16}
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Trace for benign mass P\_00061. \textcolor {revcolor}{Only the classes used by the rules are shown.}}}{5}{}\protected@file@percent }
+\newlabel{tab:trace}{{VI}{5}{}{table.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{5}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{5}{}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{References}{5}{}\protected@file@percent }
+\gdef \@abspage@last{5}
